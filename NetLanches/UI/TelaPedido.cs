@@ -1,6 +1,6 @@
 ﻿using NetLanches.Domain.Pedido;
-using NetLanches.Domain.Produtos;
 using NetLanches.Modelos;
+using NetLanches.Domain.Produtos;
 
 namespace NetLanches.UI;
 
@@ -17,17 +17,15 @@ public class TelaPedido
         {
             Console.Clear();
             ConsoleHelper.MostrarLogo();
-            Console.WriteLine("\n===== CARDÁPIO =====\n");
-
-            // Mostrar itens do cardápio
+            Console.WriteLine("\n══════════════════════ CARDÁPIO ══════════════════════════\n");
+           
             foreach (var item in cardapio.Itens)
             {
-                Console.WriteLine($"{item.Id} - {item.Nome} | R$ {item.Preco:F2}");
-                Console.WriteLine(item.Descricao);
-                Console.WriteLine();
+                Console.WriteLine($"[{item.Id}] - {item.Nome} | R$ {item.Preco:F2}");
+                Console.WriteLine($"{item.Descricao}\n");
             }
 
-            // Ler item
+            Console.WriteLine("═══════════════════════════════════════════════════════════\n");
             int idSelecionado = ConsoleHelper.LerInteiro("Digite o número do item desejado: ");
             var itemEscolhido = cardapio.Itens.FirstOrDefault(i => i.Id == idSelecionado);
 
@@ -53,13 +51,40 @@ public class TelaPedido
 
                 if (lanche.Ingredientes.Any())
                 {
-                    int idxIng = ConsoleHelper.LerOpcaoLista(
-                        lanche.Ingredientes.ToList(),
-                        i => $"{i.Key} (+ R$ {i.Value:F2})",
-                        "Escolha ingrediente adicional:"
-                    );
-                    lanche.SelecionarIngrediente(lanche.Ingredientes.ElementAt(idxIng).Key,
-                                                 lanche.Ingredientes.ElementAt(idxIng).Value);
+                    bool escolhendoIngredientes = true;
+
+                    while (escolhendoIngredientes)
+                    {
+                        int idxIng = ConsoleHelper.LerOpcaoLista(
+                            lanche.Ingredientes.ToList(),
+                            i => $"{i.Key} (+ R$ {i.Value:F2})",
+                            "Escolha ingrediente adicional (ou -1 para finalizar):",
+                            true
+                          );
+
+                        if (idxIng == -1)
+                            break;
+
+                        var ingrediente = lanche.Ingredientes.ElementAt(idxIng);
+
+                        lanche.AdicionarIngrediente(ingrediente.Key, ingrediente.Value);
+
+                        string? resp;
+
+                        while (true)
+                        {
+                            Console.Write("Adicionar mais ingredientes? (s/n): ");
+                            resp = Console.ReadLine()?.Trim().ToLower();
+
+                            if (resp == "s" || resp == "n")
+                                break;
+
+                            ConsoleHelper.MostrarErro("Digite apenas 's' ou 'n'.");
+                        }
+
+                        if (resp == "n")
+                            escolhendoIngredientes = false;
+                    }
                 }
             }
 
@@ -87,11 +112,17 @@ public class TelaPedido
                 }
             }
 
-            int quantidade = ConsoleHelper.LerInteiro("Quantidade: ");
-            if (quantidade <= 0)
+            int quantidade;
+
+            while (true)
             {
-                ConsoleHelper.MostrarErro("Quantidade inválida!");
-                continue;
+                quantidade = ConsoleHelper.LerInteiro("Quantidade de itens (Limite: 20): ");
+
+                if (quantidade > 0 && quantidade <= 20)
+                    break;
+
+                ConsoleHelper.MostrarErro("Quantidade de itens excedida! " +
+                    "");
             }
 
             var existente = pedidoAtual.ObterItens()
@@ -110,7 +141,6 @@ public class TelaPedido
             }
             Console.WriteLine($"Subtotal: R$ {pedidoAtual.CalcularTotal():F2}\n");
 
-            // Pergunta se deseja continuar
             bool respostaValida = false;
             while (!respostaValida)
             {
@@ -136,16 +166,31 @@ public class TelaPedido
     {
         Console.Clear();
         ConsoleHelper.MostrarLogo();
-        Console.WriteLine("\n===== RESUMO DO PEDIDO =====\n");
+        Console.WriteLine("\n════════════════════ RESUMO DO PEDIDO ═════════════════════\n");
 
         foreach (var item in pedidoAtual.ObterItens())
         {
             Console.WriteLine($"{item.Quantidade}x {item.Descricao} - R$ {item.Subtotal:F2}");
         }
 
-        Console.WriteLine($"\nTotal a pagar: R$ {pedidoAtual.CalcularTotal():F2}");
-        Console.WriteLine("\nObrigado pela preferência! =) ");
+        double total = pedidoAtual.CalcularTotal();
+        double desconto = pedidoAtual.CalcularDesconto();
+        double totalFinal = pedidoAtual.CalcularTotalComDesconto();
+
+        Console.WriteLine($"\nSubtotal: R$ {total:F2}");
+
+        if (desconto > 0)
+        {
+            Console.WriteLine("\nSua compra no NetLanches atingiu um valor de desconto! :D");
+            Console.WriteLine($"Valor: {total:F2} \x1b[38;5;28m-{desconto:F2} \x1b[0m");
+        }
+
+        Console.WriteLine($"\nTotal a pagar: R$ {totalFinal:F2}");
+
+        Console.WriteLine("\n\x1b[38;5;46mObrigado pela preferência! =)\x1b[0m");
+        Console.WriteLine("\n════════════════════════════════════════════════════════════");
         Console.WriteLine("\nPressione qualquer tecla para voltar...");
+
         pedidoAtual.Clear();
         Console.ReadKey();
     }

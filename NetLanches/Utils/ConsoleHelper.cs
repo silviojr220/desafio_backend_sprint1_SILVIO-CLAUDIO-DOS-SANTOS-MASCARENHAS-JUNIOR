@@ -21,10 +21,12 @@ public static class ConsoleHelper
     }
 
     public static int LerOpcaoLista<T>(
-        List<T> lista,
-        Func<T, string> exibicao,
-        string titulo = "Escolha uma opção:"
-    )
+     List<T> lista,
+     Func<T, string> exibicao,
+     string titulo = "Escolha uma opção:",
+     bool mostrarOpcaoSair = false,
+     int opcaoSair = -1
+ )
     {
         while (true)
         {
@@ -32,30 +34,37 @@ public static class ConsoleHelper
             MostrarLogo();
 
             Console.ForegroundColor = ConsoleColor.Yellow;
-            Console.WriteLine($"\n===== {titulo} =====\n");
+            Console.WriteLine($"\n═════ {titulo} ═════\n");
             Console.ResetColor();
 
             for (int i = 0; i < lista.Count; i++)
             {
-                Console.WriteLine($"{i + 1} - {exibicao(lista[i])}");
+                Console.WriteLine($"{i} - {exibicao(lista[i])}");
+            }
+
+            if (mostrarOpcaoSair)
+            {
+                Console.WriteLine($"{opcaoSair} - Sair");
             }
 
             Console.Write("\nDigite o número: ");
 
-            if (int.TryParse(Console.ReadLine(), out int escolha) &&
-                escolha >= 1 &&
-                escolha <= lista.Count)
+            if (int.TryParse(Console.ReadLine(), out int escolha))
             {
-                return escolha - 1;
+                if (mostrarOpcaoSair && escolha == opcaoSair)
+                    return opcaoSair;
+
+                if (escolha >= 0 && escolha < lista.Count)
+                    return escolha;
             }
 
             MostrarErro();
         }
     }
 
-
     public static void MostrarLogo()
     {
+        Console.Clear();
         string logo1 = "\x1b[37m███╗  ██╗███████╗████████╗\x1b[0m  \x1b[38;5;214m██╗      █████╗ ███╗  ██╗ █████╗ ██╗  ██╗███████╗ ██████╗\x1b[0m";
         string logo2 = "\x1b[37m████╗ ██║██╔════╝╚══██╔══╝\x1b[0m  \x1b[38;5;226m██║     ██╔══██╗████╗ ██║██╔══██╗██║  ██║██╔════╝██╔════╝\x1b[0m";
         string logo3 = "\x1b[37m██╔██╗██║█████╗     ██║   \x1b[0m  \x1b[38;5;9m██║     ███████║██╔██╗██║██║  ╚═╝███████║█████╗  ╚█████╗ \x1b[0m";
@@ -71,4 +80,9 @@ public static class ConsoleHelper
         Console.WriteLine($"{logo6}");
     }
 
+    public static void Pausar()
+    {
+        Console.WriteLine("\nPressione qualquer tecla para continuar...");
+        Console.ReadKey();
+    }
 }

@@ -6,13 +6,25 @@ public class Lanches : ItemCardapio
     public Dictionary<string, double> Ingredientes { get; } = new();
 
     private string saborSelecionado = "";
-    private string ingredienteSelecionado = "";
+    private List<KeyValuePair<string, double>> ingredientesSelecionados = new();
     private double valorExtraSabor = 0;
     private double valorExtraIngrediente = 0;
+    private string ingredienteSelecionado = "";
 
     public Lanches(int id, string nome, double preco, string descricao)
         : base(id, nome, preco, descricao)
     {
+    }
+
+    public void AdicionarIngrediente(string nome, double preco)
+    {
+        ingredientesSelecionados.Add(new KeyValuePair<string, double>(nome, preco));
+    }
+
+    public void RemoverIngrediente(int index)
+    {
+        if (index >= 0 && index < ingredientesSelecionados.Count)
+            ingredientesSelecionados.RemoveAt(index);
     }
 
     public void SelecionarSabor(string sabor, double valorExtra)
@@ -27,8 +39,16 @@ public class Lanches : ItemCardapio
         valorExtraIngrediente = valorExtra;
     }
 
+    public List<KeyValuePair<string, double>> ObterIngredientesSelecionados()
+    {
+        return new List<KeyValuePair<string, double>>(ingredientesSelecionados);
+    }
+
     public override double ObterPrecoFinal()
-        => Preco + valorExtraSabor + valorExtraIngrediente;
+    {
+        double extras = ingredientesSelecionados.Sum(i => i.Value);
+        return Preco + valorExtraSabor + extras;
+    }
 
     public override string ObterDescricao()
     {
@@ -37,8 +57,8 @@ public class Lanches : ItemCardapio
         if (!string.IsNullOrEmpty(saborSelecionado))
             descricao += $" ({saborSelecionado})";
 
-        if (!string.IsNullOrEmpty(ingredienteSelecionado))
-            descricao += $" + {ingredienteSelecionado}";
+        if (ingredientesSelecionados.Any())
+            descricao += " + " + string.Join(", ", ingredientesSelecionados.Select(i => i.Key));
 
         return descricao;
     }
@@ -53,7 +73,9 @@ public class Lanches : ItemCardapio
             clone.Ingredientes.Add(ingrediente.Key, ingrediente.Value);
 
         clone.SelecionarSabor(saborSelecionado, valorExtraSabor);
-        clone.SelecionarIngrediente(ingredienteSelecionado, valorExtraIngrediente);
+
+        foreach (var ing in ingredientesSelecionados)
+            clone.AdicionarIngrediente(ing.Key, ing.Value);
 
         return clone;
     }

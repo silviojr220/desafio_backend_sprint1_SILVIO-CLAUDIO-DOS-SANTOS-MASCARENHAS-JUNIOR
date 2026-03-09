@@ -22,7 +22,7 @@ public class TelaInicio
             Console.WriteLine("\n▓▒░| \x1b[1mBem vindo ao NetLanches!\x1b[0m |░▒▓\n");
             Console.WriteLine("1 ┬ Fazer Pedido");
             Console.WriteLine("2 ┼ Mostrar Cardapio");
-            Console.WriteLine("3 ┴ Sair");
+            Console.WriteLine("3 ┴ \x1b[38;5;196mSair\x1b[0m");
             Console.WriteLine("\n═══════════════════════════════════\n");
             Console.Write("Escolha: ");
 

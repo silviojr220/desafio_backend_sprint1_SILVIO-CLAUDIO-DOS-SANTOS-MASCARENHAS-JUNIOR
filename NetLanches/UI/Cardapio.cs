@@ -118,7 +118,10 @@ public class Cardapio
             Console.WriteLine(linha);
         }
 
+
+        Console.ForegroundColor = ConsoleColor.Yellow;
         Console.WriteLine("\n════════════════════════════════\n");
+        Console.ResetColor();
         ConsoleHelper.Pausar();
     }
 
